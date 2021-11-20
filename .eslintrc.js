@@ -16,9 +16,12 @@ module.exports = {
   },
   ignorePatterns: ['.eslintrc.js', 'node_modules'],
   rules: {
+    "prettier/prettier": ["off",  {"endOfLine": "auto"}],
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    'linebreak-style': ['off', 'unix'],
+    'no-trailing-whitespace': 'off'
   },
 };
