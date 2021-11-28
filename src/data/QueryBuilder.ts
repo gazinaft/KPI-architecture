@@ -1,4 +1,5 @@
 import { IBuilder } from './IBuilder';
+import { api } from '../utils';
 
 export class QueryBuilder implements IBuilder {
 
@@ -15,14 +16,14 @@ export class QueryBuilder implements IBuilder {
     return this;
   }
 
-  addFilter(prop: string, value: string): QueryBuilder {
+  addFilter(prop: string, value: any): QueryBuilder {
     if (this.query !== '') this.query += '&';
-    this.query += prop + '=' + value;
+    this.query += prop + '=' + value.toString();
     return this;
   }
 
   getQuery(): Promise<JSON> {
-    return fetch(this.url + this.query).then(x => x.json())
+    return api(this.url + this.query);
   }
 
 }

@@ -1,12 +1,15 @@
+import { api } from '../utils';
+
 export class PriceProvider {
-  readonly adress: string = 'localhost:5000/price-list';
+
+  readonly adress: string = 'http://localhost:5000/price-list';
 
   json() {
-    return fetch(this.adress).then(x => x.json());
+    return api(this.adress);
   }
 
   async data() {
-    return JSON.parse(await this.json())
+    return await this.json();
   }
 
   async length() {

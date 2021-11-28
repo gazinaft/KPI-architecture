@@ -2,13 +2,14 @@ import { IDbConnection } from './IDbConnection';
 import { Event } from '../entities/Event';
 import { QueryBuilder } from './QueryBuilder';
 import { PriceProvider } from './PriceProvider';
+import { api } from '../utils';
 
-const detailsURL = 'localhost:5000/details/';
-const searchURL = 'localhost:5050/search?';
+const detailsURL = 'http://localhost:5000/details/';
+const searchURL = 'http://localhost:5050/search?';
 
 export class DataFacade {
 
-  private db: IDbConnection;
+  public db: IDbConnection;
   private prices: PriceProvider;
 
   constructor(dbCon: IDbConnection) {
@@ -16,12 +17,30 @@ export class DataFacade {
     this.prices = new PriceProvider();
   }
 
-  async refreshInfo() {
-    this.db.refreshInfo();
-    const ids = (await this.prices.data()).map(x => x.id);
-    for (const id of ids) {
-      const evt = await fetch(detailsURL + id).then(x => x.json());
-      this.db.addEvent(new Event(evt.title, evt.price, evt.description, evt.date, evt.organizer));
+  async getAllEvents(): Promise<Event[]> {
+    const res: Event[] = [];
+    for (let i = 0; i < await this.prices.length(); ++i) {
+      const parsed = await api(detailsURL + i);
+      res.push(new Event(parsed.id, parsed.title, parsed.price,
+        parsed.descriprion, new Date(parsed.date), parsed.organizer));
+    }
+    return res;
+  }
+
+  getScheduledEvents(): Promise<Event[]> {
+    return this.db.getAllEvents();
+  }
+
+  async addEvents(evts: Event[]) {
+    this.db.clearInfo();
+    for (const event of evts) {
+      this.db.addEvent(event);
+    }
+  }
+
+  async delEvents(evts: Event[]) {
+    for (const evt of evts) {
+      this.db.deleteEvent(evt);
     }
   }
 
@@ -31,15 +50,6 @@ export class DataFacade {
 
   priceList() {
     return this.prices.data();
-  }
-
-  async getAllEvents(): Promise<Event[]> {
-    const res: Event[] = [];
-    for (let i = 0; i < await this.prices.length(); ++i) {
-      const parsed = JSON.parse(await fetch(detailsURL + i).then(x => x.json()));
-      res.push(new Event(parsed.title, parsed.price, parsed.description, parsed.date, parsed.organizer));
-    }
-    return res;
   }
 
   rateSupplier(supplier: string, grade: number) {
