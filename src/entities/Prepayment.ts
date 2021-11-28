@@ -1,14 +1,11 @@
-import { Person } from './Person';
 import { Event } from './Event';
 
 export class Prepayment {
-  public person: Person;
+  public person: string;
   public event: Event;
-  public money: number;
 
-  constructor(person: Person, event: Event, money: number) {
+  constructor(person: string, event: Event) {
     this.person = person;
     this.event = event;
-    this.money = money;
   }
 }

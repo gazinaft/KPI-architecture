@@ -6,9 +6,8 @@ export class EventProvider {
   public rating: number;
   public events: Event[];
 
-  constructor(person: Person, rating: number, events: Event[]) {
+  constructor(person: Person, rating: number) {
     this.person = person;
     this.rating = rating;
-    this.events = events;
   }
 }
