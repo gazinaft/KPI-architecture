@@ -89,16 +89,20 @@ export class PgDbConnection implements IDbConnection {
     pers = (select id from kindergarten.public.person where name = '${name}' limit 1)`)).rows[0].id;
   }
 
+
   async addEvent(evt: Event) {
     if (!await this.eventTypeExist(evt.title)) {
       await this.conn.query(`insert into kindergarten.public.event_type(title) values('${evt.title}')`);
+    }
+    if (!await this.SupplierExist(evt.organizer)) {
+      await this.rateSupplier(evt.organizer, 0);
     }
     const titleId = await this.idFromEvtType(evt.title);
     console.log(titleId);
     console.log(`${titleId}, ${evt.price}, '${evt.description}',
       ${JSON.stringify(evt.date)}, ${await this.organizerIdFromName(evt.organizer)})`);
-    this.conn.query(`insert into kindergarten.public.event(type, price, description, date, org)
-        values(${titleId}, ${evt.price}, '${evt.description}',
+    this.conn.query(`insert into kindergarten.public.event(id, type, price, description, date, org)
+        values(${evt.id}, ${titleId}, ${evt.price}, '${evt.description}',
                '${JSON.stringify(evt.date)}', ${await this.organizerIdFromName(evt.organizer)})`);
   }
 

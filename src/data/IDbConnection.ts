@@ -1,5 +1,6 @@
 import { Event } from '../entities/Event';
 import { Person } from '../entities/Person';
+import { Prepayment } from '../entities/Prepayment';
 
 export interface IDbConnection {
 
@@ -10,4 +11,5 @@ export interface IDbConnection {
   getAllEvents(): Promise<Event[]>
   getPerson(name: string): Promise<Person>;
   deleteEvent(evt: Event);
+  addPrepayment(pp: Prepayment);
 }

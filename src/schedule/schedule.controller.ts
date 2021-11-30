@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Post } from '@nestjs/common';
-import { BaseHandler } from '../logic/BaseHandler';
-import { AuthHandler } from '../logic/AuthHandler';
-import { LogHandler } from '../logic/LogHandler';
+import { Body, Controller, Delete, Get, Post } from '@nestjs/common';
+import { BaseHandler } from '../middleware/BaseHandler';
+import { AuthHandler } from '../middleware/AuthHandler';
+import { LogHandler } from '../middleware/LogHandler';
 import { ScheduleService } from './schedule.service';
 
 @Controller('schedule')
@@ -17,11 +17,17 @@ export class ScheduleController extends BaseHandler {
     this.log.setNext(this);
   }
 
+  @Get()
+  async getScheduled(): Promise<any> {
+    return this.scheduleService.getSchedule();
+  }
+
   @Post()
   async getHello(@Body() body): Promise<any> {
     body.toDelete = false;
-    return await this.auth.handle(body);
+    return await this.auth.handle(JSON.parse(body));
   }
+
 
   @Delete()
   async del(@Body() body): Promise<any> {

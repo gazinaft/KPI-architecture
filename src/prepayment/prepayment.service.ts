@@ -1,19 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { Prepayment } from '../entities/Prepayment';
 import { DataFacade } from '../data/DataFacade';
 import { PgDbConnection } from '../data/PgDbConnection';
+import { Event } from '../entities/Event';
 
 @Injectable()
-export class FilterService {
+export class PrepaymentService {
   private data: DataFacade;
+
   constructor() {
     this.data = new DataFacade(PgDbConnection.getInstance());
   }
 
-  filter(body) {
-    const query = this.data.findBy();
-    for (const key in body.props) {
-      query.addFilter(key, body.props[key]);
-    }
-    return query.getQuery()
+  add(body: {login: string, psw: string, name: string, evt: Event}) {
+    this.data.addPrepayment(new Prepayment(body.name, body.evt));
   }
 }

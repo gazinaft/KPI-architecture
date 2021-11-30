@@ -17,8 +17,8 @@ export class EventSpecs {
       e.title === 'Excoursion' && e.description.includes(city));
   }
 
-  public static PriceRange(start: number, end: number): DirectSpecs<Event[]> {
+  public static PriceRange(startEnd: number[]): DirectSpecs<Event[]> {
     return new DirectSpecs<Event[]>((e: Event) =>
-    +e.price > start && +e.price < end);
+    +e.price > startEnd[0] && +e.price < startEnd[1]);
   }
 }

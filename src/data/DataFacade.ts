@@ -3,6 +3,8 @@ import { Event } from '../entities/Event';
 import { QueryBuilder } from './QueryBuilder';
 import { PriceProvider } from './PriceProvider';
 import { api } from '../utils';
+import { Prepayment } from '../entities/Prepayment';
+import { EventProvider } from '../entities/EventProvider';
 
 const detailsURL = 'http://localhost:5000/details/';
 const searchURL = 'http://localhost:5050/search?';
@@ -38,6 +40,16 @@ export class DataFacade {
     }
   }
 
+  async updateDb() {
+    await this.db.clearInfo();
+    for (let i = 0; i < await this.prices.length(); ++i) {
+      const parsed = await api(detailsURL + i);
+      console.log(parsed);
+      await this.db.addEvent(new Event(parsed.id, parsed.title, parsed.price,
+        parsed.descriprion, new Date(parsed.date), parsed.organizer));
+    }
+  }
+
   async delEvents(evts: Event[]) {
     for (const evt of evts) {
       this.db.deleteEvent(evt);
@@ -48,14 +60,12 @@ export class DataFacade {
     return new QueryBuilder(searchURL);
   }
 
-  priceList() {
-    return this.prices.data();
+  addPrepayment(pp: Prepayment) {
+    this.db.addPrepayment(pp);
   }
 
-  rateSupplier(supplier: string, grade: number) {
-    this.db.rateSupplier(supplier, grade);
+  rateSupplier(ep: EventProvider) {
+    this.db.rateSupplier(ep.person, ep.rating);
   }
-
-
 
 }

@@ -19,4 +19,8 @@ export class ScheduleService {
     }
   }
 
+  getSchedule() {
+    return this.data.getScheduledEvents();
+  }
+
 }

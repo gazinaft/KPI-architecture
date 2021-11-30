@@ -1,12 +1,8 @@
-import { Person } from './Person'
-import { Event } from './Event';
-
 export class EventProvider {
-  public person: Person;
+  public person: string;
   public rating: number;
-  public events: Event[];
 
-  constructor(person: Person, rating: number) {
+  constructor(person: string, rating: number) {
     this.person = person;
     this.rating = rating;
   }

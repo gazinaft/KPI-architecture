@@ -1,16 +1,16 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { FilterService } from './filter.service';
 import { BaseHandler } from '../middleware/BaseHandler';
 import { AuthHandler } from '../middleware/AuthHandler';
 import { LogHandler } from '../middleware/LogHandler';
+import { PrepaymentService } from './prepayment.service';
+import { Event } from '../entities/Event';
 
-@Controller('filter')
-export class FilterController extends BaseHandler {
-
+@Controller('pay')
+export class PrepaymentController extends BaseHandler {
   private auth: AuthHandler;
   private log: LogHandler;
 
-  constructor(private readonly filterService: FilterService) {
+  constructor(private readonly ppService: PrepaymentService) {
     super();
     this.auth = new AuthHandler();
     this.log = new LogHandler();
@@ -19,12 +19,11 @@ export class FilterController extends BaseHandler {
   }
 
   @Post()
-  async getHello(@Body() body): Promise<any> {
+  async getHello(@Body() body: {login: string, psw: string, name: string, evt: Event}): Promise<any> {
     return await this.auth.handle(body);
   }
 
-  async handle(body): Promise<any> {
-    return this.filterService.filter(body);
+  async handle(body: {login: string, psw: string, name: string, evt: Event}): Promise<any> {
+    return this.ppService.add(body);
   }
-
 }
