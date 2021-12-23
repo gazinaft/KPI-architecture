@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DataFacade } from '../data/DataFacade';
 import { PgDbConnection } from '../data/PgDbConnection';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class FilterService {
@@ -15,5 +16,10 @@ export class FilterService {
       query.addFilter(key, body.props[key]);
     }
     return query.getQuery()
+  }
+
+  @Cron('0 0 0 * * *')
+  refreshDB() {
+    this.data.updateDb()
   }
 }

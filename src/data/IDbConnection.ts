@@ -12,4 +12,5 @@ export interface IDbConnection {
   getPerson(name: string): Promise<Person>;
   deleteEvent(evt: Event);
   addPrepayment(pp: Prepayment);
+  where(query: string);
 }

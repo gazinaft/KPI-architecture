@@ -33,6 +33,9 @@ export class PgDbConnection implements IDbConnection {
   }
 
   async IdFromName(name: string): Promise<any> {
+    if (!(await this.PersonExist(name))) {
+      await this.addPerson(name);
+    }
     return (await this.conn
       .query(`select id from kindergarten.public.person
         where name = '${name}'`)).rows[0].id;
@@ -133,6 +136,12 @@ export class PgDbConnection implements IDbConnection {
     join kindergarten.public.person p on p.id = o.pers`)).rows;
 
     return data.map(x => new Event(x.id, x.title, x.price, x.description, x.date, x.name))
+  }
+
+  async where(query: string) {
+    return (await this.conn.query(`
+        select * from kindergarten.public.event
+        where ${query}`)).rows
   }
 
 }

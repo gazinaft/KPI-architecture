@@ -1,13 +1,13 @@
 import { IDbConnection } from './IDbConnection';
 import { Event } from '../entities/Event';
-import { QueryBuilder } from './QueryBuilder';
 import { PriceProvider } from './PriceProvider';
 import { api } from '../utils';
 import { Prepayment } from '../entities/Prepayment';
 import { EventProvider } from '../entities/EventProvider';
+import { CachedBuilder } from './CachedBuilder';
+import { IBuilder } from './IBuilder';
 
 const detailsURL = 'http://localhost:5000/details/';
-const searchURL = 'http://localhost:5050/search?';
 
 export class DataFacade {
 
@@ -56,8 +56,8 @@ export class DataFacade {
     }
   }
 
-  findBy(): QueryBuilder {
-    return new QueryBuilder(searchURL);
+  findBy(): IBuilder {
+    return new CachedBuilder();
   }
 
   addPrepayment(pp: Prepayment) {

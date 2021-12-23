@@ -23,7 +23,9 @@ export class QueryBuilder implements IBuilder {
   }
 
   getQuery(): Promise<JSON> {
-    return api(this.url + this.query);
+    const res = this.url + this.query
+    this.reset()
+    return api(res);
   }
 
 }
