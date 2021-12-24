@@ -13,6 +13,6 @@ export class FindService {
   }
 
   async find(body, specs: DirectSpecs<Event>) {
-    return JSON.stringify((await this.data.getAllEvents()).filter(evt => specs.isSatisfiedBy(evt)));
+    return JSON.stringify((await this.data.getScheduledEvents()).filter(evt => specs.isSatisfiedBy(evt)));
   }
 }

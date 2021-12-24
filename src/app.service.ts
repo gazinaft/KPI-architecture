@@ -6,6 +6,6 @@ import { DataFacade } from './data/DataFacade';
 export class AppService {
   async getHello(): Promise<string> {
     const db = new DataFacade(PgDbConnection.getInstance());
-    return JSON.stringify(await db.getAllEvents());
+    return JSON.stringify(await db.getScheduledEvents());
   }
 }

@@ -2,8 +2,9 @@ import { IDbConnection } from './IDbConnection';
 import { Event } from '../entities/Event';
 import { Person } from '../entities/Person';
 import { Pool } from 'pg';
-import { config } from '../constants'
+import { config } from '../constants';
 import { Prepayment } from '../entities/Prepayment';
+import { delay } from '../utils';
 
 export class PgDbConnection implements IDbConnection {
 
@@ -28,14 +29,14 @@ export class PgDbConnection implements IDbConnection {
 
   async PersonExist(name: string): Promise<any> {
     return (await this.conn
-      .query(`select * from kindergarten.public.person
-        where name = '${name}'`)).rowCount > 0;
+      .query(`select exists(select name from kindergarten.public.person where name = '${name}')`)).rows[0].exists;
   }
 
   async IdFromName(name: string): Promise<any> {
     if (!(await this.PersonExist(name))) {
       await this.addPerson(name);
     }
+    await delay(10)
     return (await this.conn
       .query(`select id from kindergarten.public.person
         where name = '${name}'`)).rows[0].id;
@@ -49,13 +50,14 @@ export class PgDbConnection implements IDbConnection {
     if (!(await this.PersonExist(supplier))) {
       await this.addPerson(supplier)
     }
+    await delay(10)
     this.conn.query(`insert into kindergarten.public.organizer(pers, grade)
                        values (${await this.IdFromName(supplier)}, ${grade})`)
   }
 
   public async rateSupplier(supplier: string, grade: number) {
     if (await this.SupplierExist(supplier)) {
-      this.conn.query(`update kindergarten.public.organizer
+      await this.conn.query(`update kindergarten.public.organizer
                        SET grade = ${grade}
                        WHERE pers = ${await this.IdFromName(supplier)}`);
     } else {
@@ -88,8 +90,12 @@ export class PgDbConnection implements IDbConnection {
     if (!(await this.SupplierExist(name))) {
       await this.rateSupplier(name, 0);
     }
-    return (await this.conn.query(`select * from kindergarten.public.organizer where 
-    pers = (select id from kindergarten.public.person where name = '${name}' limit 1)`)).rows[0].id;
+    await delay(10)
+    const a = (await this.conn.query(`select * from kindergarten.public.organizer where 
+    pers = (select id from kindergarten.public.person where name = '${name}' limit 1)`))
+    console.log('OrgFromIdName');
+    console.log(a);
+    return a.rows[0].id;
   }
 
 
@@ -100,10 +106,11 @@ export class PgDbConnection implements IDbConnection {
     if (!await this.SupplierExist(evt.organizer)) {
       await this.rateSupplier(evt.organizer, 0);
     }
+    await delay(10)
     const titleId = await this.idFromEvtType(evt.title);
     console.log(titleId);
     console.log(`${titleId}, ${evt.price}, '${evt.description}',
-      ${JSON.stringify(evt.date)}, ${await this.organizerIdFromName(evt.organizer)})`);
+      ${JSON.stringify(evt.date)}, ${await this.organizerIdFromName(evt.organizer)}`);
     this.conn.query(`insert into kindergarten.public.event(id, type, price, description, date, org)
         values(${evt.id}, ${titleId}, ${evt.price}, '${evt.description}',
                '${JSON.stringify(evt.date)}', ${await this.organizerIdFromName(evt.organizer)})`);

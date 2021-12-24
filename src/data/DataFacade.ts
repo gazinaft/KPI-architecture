@@ -1,7 +1,7 @@
 import { IDbConnection } from './IDbConnection';
 import { Event } from '../entities/Event';
 import { PriceProvider } from './PriceProvider';
-import { api } from '../utils';
+import { api, delay } from '../utils';
 import { Prepayment } from '../entities/Prepayment';
 import { EventProvider } from '../entities/EventProvider';
 import { CachedBuilder } from './CachedBuilder';
@@ -19,12 +19,17 @@ export class DataFacade {
     this.prices = new PriceProvider();
   }
 
-  async getAllEvents(): Promise<Event[]> {
+  async getByid(id: number) {
+    await delay(20)
+    return api(detailsURL + id);
+  }
+
+  async cachingEvtsFromProvider(): Promise<Event[]> {
     const res: Event[] = [];
-    for (let i = 0; i < await this.prices.length(); ++i) {
-      const parsed = await api(detailsURL + i);
+    for (let i = 1; i < await this.prices.length(); ++i) {
+      const parsed = await this.getByid(i);
       res.push(new Event(parsed.id, parsed.title, parsed.price,
-        parsed.descriprion, new Date(parsed.date), parsed.organizer));
+        parsed.description, new Date(parsed.date), parsed.organizer));
     }
     return res;
   }
@@ -42,11 +47,10 @@ export class DataFacade {
 
   async updateDb() {
     await this.db.clearInfo();
-    for (let i = 0; i < await this.prices.length(); ++i) {
-      const parsed = await api(detailsURL + i);
-      console.log(parsed);
+    for (let i = 1; i <= await this.prices.length(); ++i) {
+      const parsed = await this.getByid(i);
       await this.db.addEvent(new Event(parsed.id, parsed.title, parsed.price,
-        parsed.descriprion, new Date(parsed.date), parsed.organizer));
+        parsed.description, new Date(parsed.date), parsed.organizer));
     }
   }
 
