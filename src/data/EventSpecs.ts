@@ -1,5 +1,5 @@
 import { DirectSpecs } from './DirectSpecs';
-import { Event } from '../entities/Event';
+import { Event } from '../event/Event';
 
 export class EventSpecs {
 

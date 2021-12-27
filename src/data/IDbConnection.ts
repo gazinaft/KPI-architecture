@@ -1,6 +1,6 @@
-import { Event } from '../entities/Event';
-import { Person } from '../entities/Person';
-import { Prepayment } from '../entities/Prepayment';
+import { Event } from '../event/Event';
+import { Person } from '../person/Person';
+import { Organizer } from '../organizer/Organizer';
 
 export interface IDbConnection {
 
@@ -11,6 +11,12 @@ export interface IDbConnection {
   getAllEvents(): Promise<Event[]>
   getPerson(name: string): Promise<Person>;
   deleteEvent(evt: Event);
-  addPrepayment(pp: Prepayment);
-  where(query: string);
+  addPrepayment(name: string, evt: Event);
+  filterEvents(query: string);
+  getScheduled(): Promise<Event[]>;
+  scheduleEvt(id: string);
+  deleteFromSchedule(id: string);
+  getEvent(id: string): Promise<Event>;
+  getSupplierByName(name: string): Promise<Organizer>;
+  getOrgs(top: number): Promise<Organizer[]>;
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DataFacade } from '../data/DataFacade';
 import { PgDbConnection } from '../data/PgDbConnection';
 import { DirectSpecs } from '../data/DirectSpecs';
-import { Event } from '../entities/Event';
+import { Event } from '../event/Event';
 
 @Injectable()
 export class FindService {

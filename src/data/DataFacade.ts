@@ -1,9 +1,7 @@
 import { IDbConnection } from './IDbConnection';
-import { Event } from '../entities/Event';
+import { Event } from '../event/Event';
 import { PriceProvider } from './PriceProvider';
 import { api, delay } from '../utils';
-import { Prepayment } from '../entities/Prepayment';
-import { EventProvider } from '../entities/EventProvider';
 import { CachedBuilder } from './CachedBuilder';
 import { IBuilder } from './IBuilder';
 
@@ -24,19 +22,19 @@ export class DataFacade {
     return api(detailsURL + id);
   }
 
-  async cachingEvtsFromProvider(): Promise<Event[]> {
-    const res: Event[] = [];
-    for (let i = 1; i < await this.prices.length(); ++i) {
-      const parsed = await this.getByid(i);
-      res.push(new Event(parsed.id, parsed.title, parsed.price,
-        parsed.description, new Date(parsed.date), parsed.organizer));
-    }
-    return res;
+  getAllEvents(): Promise<Event[]> {
+    return this.db.getAllEvents();
   }
 
   getScheduledEvents(): Promise<Event[]> {
-    return this.db.getAllEvents();
+    return this.db.getScheduled()
   }
+
+  scheduleEvt(id: string) {
+    this.db.scheduleEvt(id)
+    return this.db.getEvent(id);
+  }
+
 
   async addEvents(evts: Event[]) {
     this.db.clearInfo();
@@ -64,12 +62,35 @@ export class DataFacade {
     return new CachedBuilder();
   }
 
-  addPrepayment(pp: Prepayment) {
-    this.db.addPrepayment(pp);
+  async addPrepayment(name, event) {
+    return this.db.addPrepayment(name, event);
   }
 
-  rateSupplier(ep: EventProvider) {
-    this.db.rateSupplier(ep.person, ep.rating);
+  rateSupplier(name: string, rating: number) {
+    this.db.rateSupplier(name, rating);
+  }
+
+  getPerson(name: string) {
+    return this.db.getPerson(name);
+  }
+
+
+  async deleteEvent(evtId) {
+    const evt = await this.db.getEvent(evtId)
+    await this.db.deleteFromSchedule(evtId)
+    return evt;
+  }
+
+  async getSupplier(name: string) {
+    return this.db.getSupplierByName(name);
+  }
+
+  getEvent(evtId) {
+    return this.db.getEvent(evtId);
+  }
+
+  getOrgs(top: number) {
+    return this.db.getOrgs(top);
   }
 
 }

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DataFacade } from '../data/DataFacade';
 import { PgDbConnection } from '../data/PgDbConnection';
-import { EventProvider } from '../entities/EventProvider';
 
 @Injectable()
 export class RateService {
@@ -11,7 +10,7 @@ export class RateService {
   }
 
   rate(body) {
-    return this.data.rateSupplier(new EventProvider(body.name, body.grade));
+    return this.data.rateSupplier(body.name, body.grade);
   }
 
 }

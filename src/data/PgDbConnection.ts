@@ -1,10 +1,11 @@
 import { IDbConnection } from './IDbConnection';
-import { Event } from '../entities/Event';
-import { Person } from '../entities/Person';
+import { Event } from '../event/Event';
+import { Person } from '../person/Person';
 import { Pool } from 'pg';
 import { config } from '../constants';
-import { Prepayment } from '../entities/Prepayment';
+import { Prepayment } from '../prepayment/Prepayment';
 import { delay } from '../utils';
+import { Organizer } from '../organizer/Organizer';
 
 export class PgDbConnection implements IDbConnection {
 
@@ -20,6 +21,12 @@ export class PgDbConnection implements IDbConnection {
       PgDbConnection.instance = new PgDbConnection();
     }
     return PgDbConnection.instance;
+  }
+
+  async getSupplierByName(name: string): Promise<Organizer> {
+    const q = (await this.conn.query(`select * from kindergarten.public.organizer where 
+    pers = (select id from kindergarten.public.person where name = '${name}' limit 1)`)).rows[0];
+    return new Organizer(q.id, await this.getPerson(name), q.rate)
   }
 
   public async SupplierExist(supplier: string): Promise<any> {
@@ -63,6 +70,8 @@ export class PgDbConnection implements IDbConnection {
     } else {
       await this.addSupplier(supplier, grade);
     }
+    await delay(10)
+    return this.getSupplierByName(supplier);
   }
 
   clearTable(table: string) {
@@ -93,8 +102,6 @@ export class PgDbConnection implements IDbConnection {
     await delay(10)
     const a = (await this.conn.query(`select * from kindergarten.public.organizer where 
     pers = (select id from kindergarten.public.person where name = '${name}' limit 1)`))
-    console.log('OrgFromIdName');
-    console.log(a);
     return a.rows[0].id;
   }
 
@@ -121,12 +128,22 @@ export class PgDbConnection implements IDbConnection {
     await this.conn.query(`delete from kindergarten.public.event where id = ${evt.id}`);
   }
 
-  async addPrepayment(pp: Prepayment) {
-    if (!await this.PersonExist(pp.person)) {
-      await this.addPerson(pp.person);
+  async addPrepayment(name: string, evt: Event) {
+    if (!await this.PersonExist(name)) {
+      await this.addPerson(name);
     }
-    this.conn.query(`insert into kindergarten.public.prepayment(event, person)
-        values (${pp.event.id}, ${await this.IdFromName(pp.person)})`);
+    await this.conn.query(`insert into kindergarten.public.prepayment(event, person)
+        values (${evt.id}, ${await this.IdFromName(name)})`);
+    await delay(10)
+    return this.getPrepayment(evt.id.toString(), name);
+  }
+
+  async getPrepayment(eid: string, name: string) {
+    const q = (await this.conn.query(`select pp.id from kindergarten.public.prepayment pp
+        join kindergarten.public.event e on e.id = pp.event
+        join kindergarten.public.person p on p.id = pp.person
+        where e.id = ${eid} and p.name = ${name}`)).rows[0];
+    return new Prepayment(q.id, name, await this.getEvent(eid));
   }
 
   async getPerson(name: string): Promise<Person> {
@@ -145,10 +162,48 @@ export class PgDbConnection implements IDbConnection {
     return data.map(x => new Event(x.id, x.title, x.price, x.description, x.date, x.name))
   }
 
-  async where(query: string) {
+  async getScheduled(): Promise<Event[]> {
+    const data = (await this.conn.query(`select e.id, et.title, e.price, e.description, e.date, p.name
+                                  from kindergarten.public.scheduled sc
+    join kindergarten.public.event e on e.id = sc.event_id
+    join kindergarten.public.event_type et on et.id = e.type
+    join kindergarten.public.organizer o on o.id = e.org
+    join kindergarten.public.person p on p.id = o.pers`)).rows;
+
+    return data.map(x => new Event(x.id, x.title, x.price, x.description, x.date, x.name))
+  }
+
+  scheduleEvt(id: string) {
+    this.conn.query(`insert into kindergarten.public.scheduled(event_id)
+    values (${id})`)
+  }
+
+  deleteFromSchedule(id: string) {
+    this.conn.query(`delete from kindergarten.public.scheduled where event_id = ${id}`)
+  }
+
+  async filterEvents(query: string) {
     return (await this.conn.query(`
         select * from kindergarten.public.event
         where ${query}`)).rows
+  }
+
+  async getEvent(id: string) {
+    const data = (await this.conn.query(`select e.id, et.title, e.price, e.description, e.date, p.name
+                                  from kindergarten.public.event e
+    join kindergarten.public.event_type et on et.id = e.type
+    join kindergarten.public.organizer o on o.id = e.org
+    join kindergarten.public.person p on p.id = o.pers
+    where e.id = ${id}`)).rows[0];
+
+    return new Event(data.id, data.title, data.price, data.description, data.date, data.name);
+  }
+
+  async getOrgs(top: number): Promise<Organizer[]> {
+    const qs = (await this.conn.query(`select o.id as oid, p.id as pid, p.name, o.grade from kindergarten.public.organizer o 
+        join kindergarten.public.person p on p.id = o.pers
+        order by o.grade desc ${top === 0 ? '' : `limit ${top}`}`)).rows
+    return qs.map(x => new Organizer(x.oid, new Person(x.pid, x.name), x.grade));
   }
 
 }

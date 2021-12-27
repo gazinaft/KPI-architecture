@@ -18,6 +18,12 @@ export class FilterService {
     return query.getQuery()
   }
 
+  async filterSimple(key: string, value:string) {
+    const query = this.data.findBy();
+    query.addFilter(key, value);
+    return await query.getQuery();
+  }
+
   @Cron('0 0 0 * * *')
   refreshDB() {
     this.data.updateDb()

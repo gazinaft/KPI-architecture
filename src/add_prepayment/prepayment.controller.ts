@@ -3,7 +3,7 @@ import { BaseHandler } from '../middleware/BaseHandler';
 import { AuthHandler } from '../middleware/AuthHandler';
 import { LogHandler } from '../middleware/LogHandler';
 import { PrepaymentService } from './prepayment.service';
-import { Event } from '../entities/Event';
+import { Event } from '../event/Event';
 
 @Controller('pay')
 export class PrepaymentController extends BaseHandler {
@@ -24,6 +24,6 @@ export class PrepaymentController extends BaseHandler {
   }
 
   async handle(body: {login: string, psw: string, name: string, evt: Event}): Promise<any> {
-    return this.ppService.add(body);
+    return this.ppService.add(body.name, body.evt);
   }
 }

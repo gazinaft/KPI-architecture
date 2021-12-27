@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DataFacade } from '../data/DataFacade';
 import { PgDbConnection } from '../data/PgDbConnection';
-import { Event } from '../entities/Event';
+import { Event } from '../event/Event';
 
 @Injectable()
 export class ScheduleService {

@@ -27,6 +27,6 @@ export class CachedBuilder implements IBuilder {
     console.log(this.query);
     if (this.query === '') return new Promise<JSON>(() => []);
 
-    return new Promise<JSON>(this.db.where(this.query));
+    return new Promise<JSON>(this.db.filterEvents(this.query));
   }
 }
